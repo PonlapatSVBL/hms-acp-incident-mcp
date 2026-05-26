@@ -1,0 +1,32 @@
+{
+  "name": "hms-acp-feature-scrumboard-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for the HumanSoft ACP 'Feature Scrumboard' feature (web-acp Developer ▸ Feature Scrumboard). Wraps the api-acp RPC-over-POST endpoints as MCP tools.",
+  "type": "module",
+  "bin": {
+    "hms-acp-feature-scrumboard-mcp": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "@types/node": "^20.14.0"
+  }
+}
