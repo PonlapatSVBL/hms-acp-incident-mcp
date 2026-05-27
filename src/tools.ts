@@ -31,7 +31,6 @@ export const TOOLS: ToolDef[] = [
     description:
       "ดึงการ์ดของ lane เดียวบน Developer Scrumboard กรองด้วย month, keyword, member, feature, issue type, mode (archive/focus/developer), due date และ lane code. เรียกซ้ำ 6 ครั้งใน initialData() (lane 00,01,02,03,06,07).",
     shape: {
-      server_id: z.string().describe("Tenant server ID"),
       year_month: z.string().describe("YYYY-MM เช่น 2024-01"),
       incident_board_type_lv: laneCode,
       keyword: z.string().optional().describe("ค้นหาใน topic/desc/code"),
@@ -55,7 +54,7 @@ export const TOOLS: ToolDef[] = [
     description:
       "ดึงรายละเอียดเต็มของ incident card 1 ใบ รวม INCIDENT_TASK, INCIDENT_COMMENT, INCIDENT_MEMBER, INCIDENT_DOCS, INCIDENT_SYSTEM, INCIDENT_FEATURE, INCIDENT_CONTACT และข้อมูล user ทุก role.",
     shape: {
-      server_id: z.string(),
+
       incident_id: z.string().describe("base64(incident_id)"),
     },
     constants: { _compgrp: COMPGRP, _comp: "developer_scrumboard", _action: "get_card" },
@@ -72,7 +71,7 @@ export const TOOLS: ToolDef[] = [
     description:
       "อัพเดทข้อมูล incident card บน scrumboard: เปลี่ยน lane, reorder, ตั้ง delay, ราคาประเมิน, send_to_dev, due_month, due_date, commitment_dt, priority (focus), remark.",
     shape: {
-      server_id: z.string(),
+
       incident_id: z.string().describe("base64(incident_id)"),
       incident_board_type_lv: laneCode.optional(),
       status_type_lv: z.enum(["N", "Y", "P", "C", "A", "Inform"]).optional(),
@@ -113,7 +112,7 @@ export const TOOLS: ToolDef[] = [
     name: "addBoardTask",
     description: "เพิ่ม checklist item (board task) ใหม่ให้กับ incident",
     shape: {
-      server_id: z.string(),
+
       incident_id: z.string().describe("base64(incident_id)"),
       board_task_desc: z.string().describe("คำอธิบาย task"),
     },
@@ -130,7 +129,7 @@ export const TOOLS: ToolDef[] = [
     name: "saveBoardTask",
     description: "แก้ไข board task: อัพเดท board_task_desc หรือ toggle board_task_status_flag (Y/N)",
     shape: {
-      server_id: z.string(),
+
       board_task_id: z.string().describe("base64(board_task_id)"),
       board_task_desc: z.string().optional(),
       board_task_status_flag: z.enum(["Y", "N"]).optional().describe("Y=done, N=pending"),
@@ -148,7 +147,7 @@ export const TOOLS: ToolDef[] = [
     name: "deleteBoardTask",
     description: "ลบ checklist item (board task) ออกจาก incident",
     shape: {
-      server_id: z.string(),
+
       board_task_id: z.string().describe("base64(board_task_id)"),
     },
     constants: { _compgrp: COMPGRP, _comp: "developer_scrumboard", _action: "delete_board_task" },
@@ -165,7 +164,7 @@ export const TOOLS: ToolDef[] = [
     description:
       "เพิ่ม comment ใหม่ให้กับ incident รองรับ @mention ด้วย HTML <mark> tag backend parse mention และส่ง notification ให้ผู้ถูก mention",
     shape: {
-      server_id: z.string(),
+
       incident_id: z.string().describe("base64(incident_id)"),
       board_comment: z.string().describe("HTML string รองรับ <br> และ <mark>ชื่อ</mark>"),
       mention_user_id: z.string().optional().describe("base64(user_id) ถ้ามี @mention"),
@@ -184,7 +183,7 @@ export const TOOLS: ToolDef[] = [
     description:
       "แก้ไข comment หรือ mark ว่าอ่านแล้ว (ส่ง mention_user_id='' เพื่อ mark read)",
     shape: {
-      server_id: z.string(),
+
       board_comment_id: z.string().describe("base64(board_comment_id)"),
       board_comment: z.string().optional().describe("HTML content ใหม่"),
       mention_user_id: z.string().optional().describe("'' เพื่อ mark ว่าอ่านแล้ว"),
@@ -202,7 +201,7 @@ export const TOOLS: ToolDef[] = [
     name: "deleteBoardComment",
     description: "ลบ comment ออกจาก incident",
     shape: {
-      server_id: z.string(),
+
       board_comment_id: z.string().describe("base64(board_comment_id)"),
     },
     constants: { _compgrp: COMPGRP, _comp: "developer_scrumboard", _action: "delete_board_comment" },
@@ -219,7 +218,7 @@ export const TOOLS: ToolDef[] = [
     description:
       "บันทึก member list ใหม่ทั้งหมดของ incident (replace-all: ส่ง array ของ member ที่ต้องการให้อยู่)",
     shape: {
-      server_id: z.string(),
+
       incident_id: z.string().describe("base64(incident_id)"),
       incident_member: z.array(z.object({
         incident_user_id: z.string().describe("user_id (ไม่ encode)"),
@@ -242,7 +241,7 @@ export const TOOLS: ToolDef[] = [
     description:
       "ดึงรายชื่อ user กลุ่ม Dev/Products/Operation สำหรับ member picker บน scrumboard และใน dialog",
     shape: {
-      server_id: z.string(),
+
       usergroup: z.array(z.string())
         .optional()
         .describe("กลุ่ม user ที่ต้องการ default: [Dev, Products, Operation]"),
@@ -260,7 +259,7 @@ export const TOOLS: ToolDef[] = [
     name: "getListProductFeature",
     description: "ดึงรายการ product feature ทั้งหมดสำหรับ feature multi-select filter",
     shape: {
-      server_id: z.string(),
+
     },
     constants: { _compgrp: COMPGRP, _comp: "product_feature", _action: "list_product_feature" },
     annotations: {
@@ -276,7 +275,7 @@ export const TOOLS: ToolDef[] = [
     description:
       "อัพเดทข้อมูล incident: topic, desc_customer, desc, problem, correct, source_link, environment_type, issue_category_type, feature list, system list, contact list, confirm, url, productUpdate, group.",
     shape: {
-      server_id: z.string(),
+
       incident_id: z.string().describe("base64(incident_id)"),
       instance_server_id: z.string().optional().describe("base64(instance_server_id)"),
       incident_topic: z.string().optional(),
@@ -316,7 +315,7 @@ export const TOOLS: ToolDef[] = [
     name: "deleteIncident",
     description: "ลบ incident (hard/soft delete) จากระบบ",
     shape: {
-      server_id: z.string(),
+
       incident_id: z.string().describe("base64(incident_id)"),
       instance_server_id: z.string().optional().describe("base64(instance_server_id)"),
       incident_board_type_lv: z.string().optional(),
@@ -334,7 +333,7 @@ export const TOOLS: ToolDef[] = [
     name: "deleteIncidentDoc",
     description: "ลบ document/image ที่แนบกับ incident",
     shape: {
-      server_id: z.string(),
+
       incident_doc_id: z.string().describe("base64(incident_doc_id)"),
     },
     constants: { _compgrp: COMPGRP, _comp: "incidents", _action: "delete_incident_doc" },
@@ -350,7 +349,7 @@ export const TOOLS: ToolDef[] = [
     name: "archiveIncident",
     description: "Archive incident (sys_del_flag='A') ซ่อนจากบอร์ด default แต่ยังเห็นใน Archive mode",
     shape: {
-      server_id: z.string(),
+
       incident_id: z.string().describe("base64(incident_id)"),
       instance_server_id: z.string().optional().describe("base64(instance_server_id)"),
     },
@@ -367,7 +366,7 @@ export const TOOLS: ToolDef[] = [
     name: "unArchiveIncident",
     description: "UnArchive incident (sys_del_flag='N') คืน incident กลับสู่บอร์ด",
     shape: {
-      server_id: z.string(),
+
       incident_id: z.string().describe("base64(incident_id)"),
       instance_server_id: z.string().optional().describe("base64(instance_server_id)"),
     },
@@ -384,7 +383,7 @@ export const TOOLS: ToolDef[] = [
     name: "approveIncident",
     description: "Approve incident (incident_approve_flag='Y') การ์ดย้ายออกจาก Pending lane",
     shape: {
-      server_id: z.string(),
+
       incident_id: z.string().describe("base64(incident_id)"),
       instance_server_id: z.string().optional().describe("base64(instance_server_id)"),
       approve_user_id: z.string().describe("base64(user_id)"),
@@ -402,7 +401,7 @@ export const TOOLS: ToolDef[] = [
     name: "unApproveIncident",
     description: "ยกเลิก approve incident (incident_approve_flag='N') การ์ดกลับไป Pending",
     shape: {
-      server_id: z.string(),
+
       incident_id: z.string().describe("base64(incident_id)"),
       instance_server_id: z.string().optional().describe("base64(instance_server_id)"),
       approve_user_id: z.string().describe("base64(user_id)"),
@@ -420,7 +419,7 @@ export const TOOLS: ToolDef[] = [
     name: "changeTypeIncident",
     description: "เปลี่ยนประเภทของ card จาก Incident เป็น Requirement (หรือกลับ)",
     shape: {
-      server_id: z.string(),
+
       incident_id: z.string().describe("base64(incident_id)"),
       instance_server_id: z.string().optional().describe("base64(instance_server_id)"),
       incident_board_type_lv: z.string().optional(),
@@ -440,7 +439,7 @@ export const TOOLS: ToolDef[] = [
     name: "getListIncidentGroup",
     description: "ดึง tree-structure ของ incident group สำหรับ group classification selector ใน dialog",
     shape: {
-      server_id: z.string(),
+
     },
     constants: { _compgrp: COMPGRP, _comp: "incidents", _action: "get_list_incident_group" },
     annotations: {
@@ -455,7 +454,7 @@ export const TOOLS: ToolDef[] = [
     name: "getListURL",
     description: "ดึงรายการ URL สำหรับ incident_url selector ใน dialog",
     shape: {
-      server_id: z.string(),
+
     },
     constants: { _compgrp: COMPGRP, _comp: "incidents", _action: "get_list_url" },
     annotations: {
@@ -470,7 +469,7 @@ export const TOOLS: ToolDef[] = [
     name: "getListProductUpdate",
     description: "ดึงรายการ product update สำหรับ productUpdateSelected ใน dialog",
     shape: {
-      server_id: z.string(),
+
     },
     constants: { _compgrp: COMPGRP, _comp: "incidents", _action: "get_list_product_update" },
     annotations: {
@@ -485,7 +484,7 @@ export const TOOLS: ToolDef[] = [
     name: "getListDomains",
     description: "ดึงรายการ domain/instance server สำหรับ contact picker ใน dialog",
     shape: {
-      server_id: z.string(),
+
     },
     constants: { _compgrp: COMPGRP, _comp: "incidents", _action: "get_list_domain" },
     annotations: {
