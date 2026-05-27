@@ -109,7 +109,7 @@ export class AcpClient {
   }
 
   async login(): Promise<void> {
-    const url = `${this.config.baseUrl}${this.config.apiPath}`;
+    const url = `${this.config.baseUrl}/api.php`;
     const result = await this.post(url, {
       _compgrp: "admincps",
       _comp: "users",
@@ -139,7 +139,7 @@ export class AcpClient {
     }
 
     const qs = `_compgrp=${encodeURIComponent(constants._compgrp)}&_comp=${encodeURIComponent(constants._comp)}&_action=${encodeURIComponent(constants._action)}`;
-    const url = `${this.config.baseUrl}${this.config.apiWebPath}?${qs}`;
+    const url = `${this.config.baseUrl}${this.config.apiPath}?${qs}`;
 
     const withContext: Record<string, unknown> = { ...params, identify_user_id: this.userId };
     return this.post(url, encodeIds(withContext));

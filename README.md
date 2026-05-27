@@ -54,34 +54,22 @@ Login uses `POST /api.php` (body-param routing) and runs automatically on the fi
 | `ACP_USERNAME` | **yes** | — | Username สำหรับ login |
 | `ACP_PASSWORD` | **yes** | — | Password สำหรับ login |
 | `ACP_API_BASE_URL` | no | `https://core-acp.humansoft.co.th` | Base URL |
-| `ACP_API_PATH` | no | `/api.php` | Login endpoint |
-| `ACP_API_WEB_PATH` | no | `/api-web.php` | Tool endpoint |
+| `ACP_API_PATH` | no | `/api-web.php` | Tool endpoint path |
 | `ACP_API_TIMEOUT_MS` | no | `30000` | Per-request timeout (ms) |
 | `MCP_HTTP_PORT` | no | — | เปิด HTTP transport แทน stdio (สำหรับ Postman) |
 
-## Install & build
-
-```bash
-npm install
-npm run build
-```
-
-## Run
-
-```bash
-ACP_USERNAME=... ACP_PASSWORD=... node dist/index.js
-```
-
-The server speaks MCP over **stdio**.
-
-### Use with Claude Code / Claude Desktop
+## Use with Claude Code / Claude Desktop
 
 ```json
 {
   "mcpServers": {
     "hms-acp-incident": {
-      "command": "node",
-      "args": ["/path/to/hms-acp-incident-mcp/dist/index.js"],
+      "command": "C:\\path\\to\\node.exe",
+      "args": [
+        "C:\\path\\to\\node_modules\\npm\\bin\\npx-cli.js",
+        "-y",
+        "@rabbitdev/hms-acp-incident-mcp"
+      ],
       "env": {
         "ACP_USERNAME": "your-username",
         "ACP_PASSWORD": "your-password"
@@ -91,7 +79,7 @@ The server speaks MCP over **stdio**.
 }
 ```
 
-### Use via npx (after publishing to npm)
+## Test with Postman (stdio)
 
 ```json
 {
@@ -108,10 +96,14 @@ The server speaks MCP over **stdio**.
 }
 ```
 
-### Test with Postman (HTTP)
+## Test with Postman (HTTP)
 
-```bash
-MCP_HTTP_PORT=3000 ACP_USERNAME=... ACP_PASSWORD=... node dist/index.js
+```powershell
+$env:ACP_USERNAME = "your-username"
+$env:ACP_PASSWORD = "your-password"
+$env:MCP_HTTP_PORT = "3000"
+
+& "C:\path\to\node.exe" "C:\path\to\node_modules\npm\bin\npx-cli.js" -y @rabbitdev/hms-acp-incident-mcp
 ```
 
 POST JSON-RPC messages to `http://localhost:3000/`.
@@ -119,4 +111,4 @@ POST JSON-RPC messages to `http://localhost:3000/`.
 ## Security notes
 
 - Credentials are used only at login; `identify_user_id` from the session is injected into every request body.
-- `deleteIncident` and `deleteBoardTask`/`deleteBoardComment`/`deleteIncidentDoc` are irreversible.
+- `deleteIncident`, `deleteBoardTask`, `deleteBoardComment`, `deleteIncidentDoc` are irreversible.

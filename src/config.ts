@@ -1,17 +1,8 @@
-/**
- * Runtime configuration, read from environment variables.
- *
- * Transport mirrors web-acp's src/app/untils/http-service.ts (httpPostService):
- * every call is POSTed to `${SERVER}/api.php`. SERVER defaults to the api-acp
- * production base (https://api.humansoft.co.th).
- */
 export interface AcpConfig {
   /** api-acp base URL, e.g. https://core-acp.humansoft.co.th (no trailing slash). */
   baseUrl: string;
-  /** Login endpoint path — body-param routing. */
-  apiPath: string;
   /** Tool endpoint path — query-param routing (?_compgrp=&_comp=&_action=). */
-  apiWebPath: string;
+  apiPath: string;
   /** Username for identifier_user login. */
   username: string;
   /** Password for identifier_user login. */
@@ -34,14 +25,12 @@ function required(name: string): string {
 export function loadConfig(): AcpConfig {
   const rawBase = (process.env.ACP_API_BASE_URL || "https://core-acp.humansoft.co.th").trim();
   const baseUrl = rawBase.replace(/\/+$/, "");
-  const apiPath = (process.env.ACP_API_PATH || "/api.php").trim();
-  const apiWebPath = (process.env.ACP_API_WEB_PATH || "/api-web.php").trim();
+  const apiPath = (process.env.ACP_API_PATH || "/api-web.php").trim();
   const timeoutMs = Number(process.env.ACP_API_TIMEOUT_MS || "30000");
 
   return {
     baseUrl,
     apiPath: apiPath.startsWith("/") ? apiPath : `/${apiPath}`,
-    apiWebPath: apiWebPath.startsWith("/") ? apiWebPath : `/${apiWebPath}`,
     username: required("ACP_USERNAME"),
     password: required("ACP_PASSWORD"),
     timeoutMs: Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : 30000,
