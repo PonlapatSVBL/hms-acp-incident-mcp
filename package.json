@@ -1,6 +1,6 @@
 {
   "name": "@rabbitdev/hms-acp-incident-mcp",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "MCP server for the HumanSoft ACP Developer Scrumboard (web-acp Developer ▸ Scrumboard). Tracks Incidents across Kanban lanes via api-web.php.",
   "type": "module",
   "bin": {
