@@ -1,10 +1,10 @@
 {
-  "name": "hms-acp-feature-scrumboard-mcp",
+  "name": "@rabbitdev/hms-acp-incident-mcp",
   "version": "1.0.0",
-  "description": "MCP server for the HumanSoft ACP 'Feature Scrumboard' feature (web-acp Developer ▸ Feature Scrumboard). Wraps the api-acp RPC-over-POST endpoints as MCP tools.",
+  "description": "MCP server for the HumanSoft ACP Developer Scrumboard (web-acp Developer ▸ Scrumboard). Tracks Incidents across Kanban lanes via api-web.php.",
   "type": "module",
   "bin": {
-    "hms-acp-feature-scrumboard-mcp": "dist/index.js"
+    "hms-acp-incident-mcp": "dist/index.js"
   },
   "main": "dist/index.js",
   "files": [
