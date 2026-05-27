@@ -10,14 +10,10 @@ export interface AcpConfig {
   baseUrl: string;
   /** Path of the single PHP front controller. */
   apiPath: string;
-  /** Bearer token sent as `Authorization: Bearer {token}`. */
-  token: string;
-  /**
-   * Current user's raw id. When set, `identify_user_id` (base64) is injected
-   * into every request body — the spec lists it as a context param the client
-   * adds automatically. Optional: omit if the backend derives it from the JWT.
-   */
-  userId?: string;
+  /** Username for identifier_user login. */
+  username: string;
+  /** Password for identifier_user login. */
+  password: string;
   /** Per-request timeout in milliseconds. */
   timeoutMs: number;
 }
@@ -42,8 +38,8 @@ export function loadConfig(): AcpConfig {
   return {
     baseUrl,
     apiPath: apiPath.startsWith("/") ? apiPath : `/${apiPath}`,
-    token: required("ACP_API_TOKEN"),
-    userId: process.env.ACP_USER_ID?.trim() || undefined,
+    username: required("ACP_USERNAME"),
+    password: required("ACP_PASSWORD"),
     timeoutMs: Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : 30000,
   };
 }

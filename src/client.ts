@@ -65,28 +65,15 @@ export class AcpApiError extends Error {
  * inspect the envelope rather than just the HTTP status.
  */
 export class AcpClient {
+  private userId: string | undefined;
+
   constructor(private readonly config: AcpConfig) {}
 
   private get url(): string {
     return `${this.config.baseUrl}${this.config.apiPath}`;
   }
 
-  async call(
-    constants: RpcConstants,
-    params: Record<string, unknown> = {}
-  ): Promise<unknown> {
-    // identify_user_id is a context param the client adds to every call; the
-    // encoder base64-encodes it because the key ends in `_id`.
-    const withContext: Record<string, unknown> = { ...params };
-    if (this.config.userId) {
-      withContext.identify_user_id = this.config.userId;
-    }
-
-    const body = {
-      ...constants,
-      ...encodeIds(withContext),
-    };
-
+  private async post(body: Record<string, unknown>): Promise<unknown> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.config.timeoutMs);
 
@@ -94,10 +81,7 @@ export class AcpClient {
     try {
       res = await fetch(this.url, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.config.token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
         signal: controller.signal,
       });
@@ -118,7 +102,6 @@ export class AcpClient {
     try {
       parsed = text ? JSON.parse(text) : null;
     } catch {
-      // Non-JSON response (e.g. PHP fatal / HTML error page).
       if (!res.ok) {
         throw new AcpApiError(`HTTP ${res.status} ${res.statusText}`, {
           httpStatus: res.status,
@@ -138,7 +121,6 @@ export class AcpClient {
       });
     }
 
-    // Inspect the application envelope. `code` may be string or number.
     const envelope = parsed as { code?: unknown; message?: unknown } | null;
     const code = envelope && envelope.code !== undefined ? String(envelope.code) : undefined;
     if (code !== undefined && code !== "200") {
@@ -150,5 +132,40 @@ export class AcpClient {
     }
 
     return parsed;
+  }
+
+  async login(): Promise<void> {
+    const result = await this.post({
+      _compgrp: "admincps",
+      _comp: "users",
+      _action: "identifier_user",
+      user_name: this.config.username,
+      user_psw: this.config.password,
+    });
+
+    const payload = (result as { payload?: Record<string, unknown> } | null)?.payload;
+    if (!payload || typeof payload !== "object") {
+      throw new AcpApiError("Login response missing payload");
+    }
+
+    const userId = payload["identify_user_id"] ?? payload["user_id"];
+    if (!userId) {
+      throw new AcpApiError("Login response missing identify_user_id");
+    }
+    this.userId = String(userId);
+  }
+
+  async call(
+    constants: RpcConstants,
+    params: Record<string, unknown> = {}
+  ): Promise<unknown> {
+    if (!this.userId) {
+      await this.login();
+    }
+
+    const withContext: Record<string, unknown> = { ...params };
+    withContext.identify_user_id = this.userId;
+
+    return this.post({ ...constants, ...encodeIds(withContext) });
   }
 }
