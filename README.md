@@ -45,22 +45,24 @@ encodes them for you. Specifically it encodes:
 
 - any top-level field ending in `_id` (`feature_id`, `incident_id`, …);
 - `member[].id` and `feature[].id` (the array filter ids);
-- `identify_user_id` (injected automatically from `ACP_USER_ID`, if set).
+- `identify_user_id` (injected automatically from the login response).
 
 Nested ids inside `list_card` are passed through untouched, matching the
 frontend behaviour exactly.
 
 ## Configuration
 
-Set environment variables (see `.env.example`):
+Set environment variables:
 
 | Variable | Required | Default | Purpose |
 | --- | --- | --- | --- |
-| `ACP_API_TOKEN` | **yes** | — | Bearer token (`Authorization: Bearer {token}`). |
-| `ACP_API_BASE_URL` | no | `https://api.humansoft.co.th` | api-acp base URL. |
+| `ACP_USERNAME` | **yes** | — | Username for login. |
+| `ACP_PASSWORD` | **yes** | — | Password for login. |
+| `ACP_API_BASE_URL` | no | `https://core-acp.humansoft.co.th` | api-acp base URL. |
 | `ACP_API_PATH` | no | `/api.php` | Front-controller path. |
-| `ACP_USER_ID` | no | — | Raw current-user id → injected as `identify_user_id`. |
 | `ACP_API_TIMEOUT_MS` | no | `30000` | Per-request timeout. |
+
+Authentication is performed automatically on the first tool call via `POST /api.php` with `_action: identifier_user`. The returned `identify_user_id` is injected into every subsequent request body.
 
 ## Install & build
 
@@ -72,7 +74,7 @@ npm run build
 ## Run
 
 ```bash
-ACP_API_TOKEN=... node dist/index.js
+ACP_USERNAME=... ACP_PASSWORD=... node dist/index.js
 ```
 
 The server speaks MCP over **stdio**.
@@ -84,23 +86,44 @@ The server speaks MCP over **stdio**.
   "mcpServers": {
     "hms-acp-feature-scrumboard": {
       "command": "node",
-      "args": ["B:/RabbitDev-Workspace/hms-acp-incident-mcp/dist/index.js"],
+      "args": ["/path/to/hms-acp-incident-mcp/dist/index.js"],
       "env": {
-        "ACP_API_TOKEN": "your-jwt-token-here"
+        "ACP_USERNAME": "your-username",
+        "ACP_PASSWORD": "your-password"
       }
     }
   }
 }
 ```
 
-## Security notes (from the spec)
+### Test with Postman (stdio)
 
-- `server_id`, `instance_server_id`, and `instance_server_channel_id` scope every
-  query to the caller's tenant and are derived server-side from the JWT — the
-  client does **not** send them.
-- The upstream PHP backend builds SQL by interpolating request values
-  (keyword/year/date) → SQL-injection risk, and `api.php` contains hard-coded
-  production secrets. These are backend concerns; this server propagates no
-  secrets beyond `ACP_API_TOKEN`.
+Use full path to `node.exe` in the Postman MCP server config:
+
+```json
+{
+  "command": "C:\\path\\to\\node.exe",
+  "args": ["C:\\path\\to\\hms-acp-incident-mcp\\dist\\index.js"],
+  "env": {
+    "ACP_USERNAME": "your-username",
+    "ACP_PASSWORD": "your-password"
+  }
+}
+```
+
+### Test with Postman (HTTP)
+
+Set `MCP_HTTP_PORT` to start an HTTP transport alongside stdio:
+
+```bash
+MCP_HTTP_PORT=3000 ACP_USERNAME=... ACP_PASSWORD=... node dist/index.js
+```
+
+Then POST JSON-RPC messages to `http://localhost:3000/`.
+
+## Security notes
+
+- Credentials are used only at login; `identify_user_id` from the session is
+  injected into every request body.
 - `deleteProductFeature` is irreversible — prefer `archiveProductFeature` when a
   feature might be needed again.

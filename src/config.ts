@@ -30,7 +30,7 @@ function required(name: string): string {
 }
 
 export function loadConfig(): AcpConfig {
-  const rawBase = (process.env.ACP_API_BASE_URL || "https://api.humansoft.co.th").trim();
+  const rawBase = (process.env.ACP_API_BASE_URL || "https://core-acp.humansoft.co.th").trim();
   const baseUrl = rawBase.replace(/\/+$/, ""); // strip trailing slashes
   const apiPath = (process.env.ACP_API_PATH || "/api.php").trim();
   const timeoutMs = Number(process.env.ACP_API_TIMEOUT_MS || "30000");
