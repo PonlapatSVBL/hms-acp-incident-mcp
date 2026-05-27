@@ -29,15 +29,17 @@ async function main(): Promise<void> {
 
   const server = new McpServer(
     {
-      name: "hms-acp-feature-scrumboard",
+      name: "hms-acp-incident-mcp",
       version: "1.0.0",
     },
     {
       instructions:
-        "Tools for the HumanSoft ACP 'Feature Scrumboard' (web-acp Developer ▸ Feature Scrumboard). " +
-        "Two boards — Feature (product-feature cards) and Incident (software-incident cards) — laid out " +
-        "in month columns. Pass raw ids (feature_id, incident_id, member[].id, feature[].id); the server " +
-        "base64-encodes them as the backend requires. All responses use a { code, message, payload } envelope.",
+        "Tools for the HumanSoft ACP Developer Scrumboard (web-acp Developer ▸ Scrumboard). " +
+        "Kanban board tracking Incidents (Bug/Extra Code/Emergency/Performance) across lanes: " +
+        "Pending → To do → Doing → Ready to test → Complete / Reject. " +
+        "Pass raw ids — the server base64-encodes any field ending in _id automatically. " +
+        "All requests go to POST /api-web.php?_compgrp=&_comp=&_action=. " +
+        "All responses use a { code, message, payload } envelope.",
     }
   );
 
