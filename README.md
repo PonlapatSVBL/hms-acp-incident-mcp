@@ -1,68 +1,63 @@
-# HMS ACP — Feature Scrumboard MCP Server
+# @rabbitdev/hms-acp-incident-mcp
 
 An MCP (Model Context Protocol) server, written in TypeScript, that exposes the
-**Feature Scrumboard** feature of HumanSoft ACP (`web-acp` → Developer ▸ Feature
-Scrumboard) as MCP tools. It wraps the `api-acp` RPC-over-POST backend.
-
-Generated from `migration-specs/feature-scrumboard/mcp-spec.json`.
+**Developer Scrumboard** of HumanSoft ACP (`web-acp` → Developer ▸ Scrumboard) as MCP tools.
 
 ## What it does
 
-The Feature Scrumboard has two boards laid out in month columns:
+Kanban board for Dev/Products/Operation teams tracking Incidents (Bug / Extra Code / Emergency / Performance)
+across pipeline lanes: **Pending → To do → Doing → Ready to test → Complete / Reject**.
 
-- **Feature board** — product-feature cards (add / edit / move / archive / delete).
-- **Incident board** — software-incident cards linked to features, with rich
-  filtering and drag-to-reschedule.
+All tool calls go to `POST /api-web.php?_compgrp=&_comp=&_action=` with data in the request body.
+Login uses `POST /api.php` (body-param routing) and runs automatically on the first tool call.
 
-All calls go to a single PHP front controller (`api.php`); the operation is
-selected by the `_compgrp` / `_comp` / `_action` body fields, which the backend
-maps to `modules/{_compgrp}/{_comp}/{_action}.php`.
-
-## Tools (14)
+## Tools (24)
 
 | Tool | Kind | Description |
 | --- | --- | --- |
-| `getFeatureBoard` | read | Feature cards grouped into month columns (keyword/status/year/archive filters). |
-| `getFeatureCard` | read | Full detail of one feature incl. linked incidents. |
-| `saveFeatureCard` | write | Persist due-month / column order after a drag. |
-| `getIncidentBoard` | read | Incident cards in month columns with rich filtering. |
-| `listIncidentNoDueMonth` | read | Approved Software incidents with no due month. |
-| `saveIncidentCard` | write | Persist incident due-month / order / status after a drag. |
-| `addProductFeature` | write | Create a new feature card. |
-| `saveProductFeature` | write | Update name / month / desc / status / deploy flags. |
-| `archiveProductFeature` | write | Archive a feature (`sys_del_flag='A'`, reversible). |
-| `unarchiveProductFeature` | write | Restore an archived feature. |
-| `deleteProductFeature` | **destructive** | Permanently delete a feature + unlink incidents. |
-| `listProductFeature` | read | Lightweight feature list for dropdowns. |
-| `listUserUsergroup` | read | Active users, optionally filtered by usergroup. |
-| `getIncidentCardDetail` | read | Detail of one incident card (sibling `developer_scrumboard`). |
+| `getBoardLane` | read | การ์ดของ lane เดียว กรองด้วย month/keyword/member/feature/issue type/mode/due date |
+| `getCard` | read | รายละเอียดเต็มของ incident card รวม task/comment/member/doc/system/feature/contact |
+| `saveCard` | write | อัพเดท lane, reorder, delay, ราคาประเมิน, send_to_dev, due date, priority, remark |
+| `addBoardTask` | write | เพิ่ม checklist item ใหม่ |
+| `saveBoardTask` | write | แก้ไข checklist item หรือ toggle done/pending |
+| `deleteBoardTask` | **destructive** | ลบ checklist item |
+| `addBoardComment` | write | เพิ่ม comment (รองรับ @mention ด้วย `<mark>` tag) |
+| `saveBoardComment` | write | แก้ไข comment หรือ mark ว่าอ่านแล้ว |
+| `deleteBoardComment` | **destructive** | ลบ comment |
+| `saveMember` | write | บันทึก member list ทั้งหมด (replace-all) |
+| `getListUserDevProduct` | read | รายชื่อ user กลุ่ม Dev/Products/Operation |
+| `getListProductFeature` | read | รายการ product feature สำหรับ filter |
+| `saveIncident` | write | แก้ไข topic/desc/problem/correct/source/type/feature/system/contact/group |
+| `deleteIncident` | **destructive** | ลบ incident |
+| `deleteIncidentDoc` | **destructive** | ลบ document/image ที่แนบ |
+| `archiveIncident` | write | Archive incident (`sys_del_flag='A'`) |
+| `unArchiveIncident` | write | UnArchive incident กลับสู่บอร์ด |
+| `approveIncident` | write | Approve incident ย้ายออกจาก Pending lane |
+| `unApproveIncident` | write | ยกเลิก approve กลับไป Pending |
+| `changeTypeIncident` | write | เปลี่ยนประเภท Incident ↔ Requirement |
+| `getListIncidentGroup` | read | Tree-structure ของ incident group |
+| `getListURL` | read | รายการ URL สำหรับ incident_url selector |
+| `getListProductUpdate` | read | รายการ product update สำหรับ productUpdateSelected |
+| `getListDomains` | read | รายการ domain/instance server สำหรับ contact picker |
 
-## ID encoding (important)
+## ID encoding
 
-The frontend base64-encodes (`btoa`) every field whose name ends in `_id`, and
-`api.php` base64-decodes them on arrival. **You pass raw ids** — this server
-encodes them for you. Specifically it encodes:
-
-- any top-level field ending in `_id` (`feature_id`, `incident_id`, …);
-- `member[].id` and `feature[].id` (the array filter ids);
-- `identify_user_id` (injected automatically from the login response).
-
-Nested ids inside `list_card` are passed through untouched, matching the
-frontend behaviour exactly.
+**ส่ง raw id มา** — server base64-encode ให้อัตโนมัติ สำหรับ:
+- ทุก field ระดับ top-level ที่ชื่อลงท้ายด้วย `_id`
+- `member[].id` และ `feature[].id` (array filter)
+- `identify_user_id` (inject อัตโนมัติจาก login response)
 
 ## Configuration
 
-Set environment variables:
-
 | Variable | Required | Default | Purpose |
 | --- | --- | --- | --- |
-| `ACP_USERNAME` | **yes** | — | Username for login. |
-| `ACP_PASSWORD` | **yes** | — | Password for login. |
-| `ACP_API_BASE_URL` | no | `https://core-acp.humansoft.co.th` | api-acp base URL. |
-| `ACP_API_PATH` | no | `/api.php` | Front-controller path. |
-| `ACP_API_TIMEOUT_MS` | no | `30000` | Per-request timeout. |
-
-Authentication is performed automatically on the first tool call via `POST /api.php` with `_action: identifier_user`. The returned `identify_user_id` is injected into every subsequent request body.
+| `ACP_USERNAME` | **yes** | — | Username สำหรับ login |
+| `ACP_PASSWORD` | **yes** | — | Password สำหรับ login |
+| `ACP_API_BASE_URL` | no | `https://core-acp.humansoft.co.th` | Base URL |
+| `ACP_API_PATH` | no | `/api.php` | Login endpoint |
+| `ACP_API_WEB_PATH` | no | `/api-web.php` | Tool endpoint |
+| `ACP_API_TIMEOUT_MS` | no | `30000` | Per-request timeout (ms) |
+| `MCP_HTTP_PORT` | no | — | เปิด HTTP transport แทน stdio (สำหรับ Postman) |
 
 ## Install & build
 
@@ -84,7 +79,7 @@ The server speaks MCP over **stdio**.
 ```json
 {
   "mcpServers": {
-    "hms-acp-feature-scrumboard": {
+    "hms-acp-incident": {
       "command": "node",
       "args": ["/path/to/hms-acp-incident-mcp/dist/index.js"],
       "env": {
@@ -96,14 +91,16 @@ The server speaks MCP over **stdio**.
 }
 ```
 
-### Test with Postman (stdio)
-
-Use full path to `node.exe` in the Postman MCP server config:
+### Use via npx (after publishing to npm)
 
 ```json
 {
   "command": "C:\\path\\to\\node.exe",
-  "args": ["C:\\path\\to\\hms-acp-incident-mcp\\dist\\index.js"],
+  "args": [
+    "C:\\path\\to\\node_modules\\npm\\bin\\npx-cli.js",
+    "-y",
+    "@rabbitdev/hms-acp-incident-mcp"
+  ],
   "env": {
     "ACP_USERNAME": "your-username",
     "ACP_PASSWORD": "your-password"
@@ -113,17 +110,13 @@ Use full path to `node.exe` in the Postman MCP server config:
 
 ### Test with Postman (HTTP)
 
-Set `MCP_HTTP_PORT` to start an HTTP transport alongside stdio:
-
 ```bash
 MCP_HTTP_PORT=3000 ACP_USERNAME=... ACP_PASSWORD=... node dist/index.js
 ```
 
-Then POST JSON-RPC messages to `http://localhost:3000/`.
+POST JSON-RPC messages to `http://localhost:3000/`.
 
 ## Security notes
 
-- Credentials are used only at login; `identify_user_id` from the session is
-  injected into every request body.
-- `deleteProductFeature` is irreversible — prefer `archiveProductFeature` when a
-  feature might be needed again.
+- Credentials are used only at login; `identify_user_id` from the session is injected into every request body.
+- `deleteIncident` and `deleteBoardTask`/`deleteBoardComment`/`deleteIncidentDoc` are irreversible.
